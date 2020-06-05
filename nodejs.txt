@@ -1,0 +1,61 @@
+npm init -y
+
+npx tsc --init -> cria automaticamente um arquivo de configuração do typescript
+
+npx ts-node src/server.ts -> para apontar para meu typescript
+
+ts-node-dev -D -> para gerar o server.ts automaticamente
+
+npx ts-node-dev src/server.ts
+
+npx create-react-app web --template=typescript
+
+npm start -> na web
+
+npx knex migrate:latest --knexfile knexfile.ts migrate:latest -> para criar as tabelas do Knex
+
+import {Request, Response} from 'express';
+import knex from '../database/connect';
+
+class PointsController {
+    async create(request: Request, response: Response) {
+        const {
+          name,
+          email,
+          whatssap,
+          latitude,
+          longitude,
+          city,
+          uf,
+          items  
+        } = request.body;
+    
+        const trx = await knex.transaction();
+    
+        const insertedIds = await trx('points').insert({
+          image: 'image-fake',
+          name,
+          email,
+          whatssap,
+          latitude,
+          longitude,
+          city,
+          uf
+        });
+    
+        const point_id = insertedIds;
+    
+        const pointItems = items.map((item_id: number )=> {
+            return {
+                item_id,
+                point_id,
+            };
+        });
+    
+        await trx('point_items').insert(pointItems);
+    
+        return response.json({ success: true });
+    }
+}
+
+export default PointsController;
